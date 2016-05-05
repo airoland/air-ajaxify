@@ -10,7 +10,7 @@ License: MIT
 
 使用者须保留文件中的作者版权信息
 
-Version: 1.0.92
+Version: 1.0.93
 
 **Notice: jQuery is neccessary.**
 
@@ -28,7 +28,17 @@ Version: 1.0.92
 
 ## 开源说明
 
-目前正在V1.0.x迭代中，最新的V1.0.92版本功能已经完备，但代码还有可以优化和精简的地方，因此暂不开源，只提供压缩版本（在dist目录下）。待版本更新到V1.1.0优化完毕以后会全面开源。
+目前正在V1.0.x迭代中，最新的V1.0.93版本功能已经完备，但代码还有可以优化和精简的地方，因此暂不开源，只提供压缩版本（在dist目录下）。待版本更新到V1.1.0优化完毕以后会全面开源。
+
+## 更新说明 - V1.0.93
+
+1、AJAX状态操作全部采用回调函数的方式（详见[AJAX状态操作](#ajax状态操作)）；
+
+2、增加了`loadingFunction`属性（详见[loadingFunction](#loadingfunction)）；
+
+3、更成熟的`setData()`机制，使用`back()`返回时仍能正确获取到此页面之前设置的数据；
+
+4、更新了`固有方法`的说明（详见[air-js固有方法](#air-js固有方法)）。
 
 ## 更新说明 - V1.0.92
 
@@ -141,6 +151,11 @@ options = {
 		html: null,				// 对应aa-loadingcontent-html
 		cssClass: null,			// 对应aa-loadingcontent-class
 		show: true				// 对应aa-loadingcontent-show
+	},
+	loadingFunction: {
+		pre: null,
+		after: null,
+		show: true
 	},
 	prepare:null,
 	before:null,
@@ -340,32 +355,34 @@ air.ajaxify({
 
 `options`中的一些属性可以根据AJAX请求的状态来执行操作。
 
-你可以传入一段可执行的Javascript代码，比如：
+对AJAX的状态操作采用回调函数的形式，比如：
 
 ```javascript
 // 全局设置所有air-ajaxify请求的通用操作
 air.ajaxify({
-	render: "alert()"	// 在加载成功并开始渲染页面时执行alert
+	render: function(){
+		alert();	// 在加载成功并开始渲染页面时执行alert
+	}
 });
 
 // 或者为某个elem单独指定操作
 air.ajaxify({
 	elem: "#test",
-	render: "alert(3)"
+	render: function(){
+		// do something
+	}
 });
 ```
 
-也可以像这样：
+某些回调函数也可以返回false来阻塞下一步的执行：
 
 ```javascript
 air.ajaxify({
-	render: "foo()"	// 在加载成功并开始渲染页面时执行foo函数，但由于函数返回false，因此页面不会被渲染
+	render: function(){
+		alert();
+		return false;	// 在加载成功并开始渲染页面时执行此函数，但由于函数返回false，因此页面不会被渲染
+	}
 });
-
-function foo(){
-	alert();
-	return false;
-}
 ```
 
 下面是详细说明：
@@ -381,6 +398,40 @@ function foo(){
 * `complete`:	无论出现何种情况，只要请求完成就会执行的操作。
 
 **再次提醒：只有prepare和render在返回false时才会阻塞下一步操作。**
+
+#### loadingFunction
+
+尽管loadingContent已经让用户可以自定义加载动画，但我仍然希望给予用户更多选择，因此增加了loadingFunction属性。
+
+你可以用回调函数的方式来设置loadingFunction：
+
+```javascript
+air.ajaxify({
+	loadingFunction:{
+		pre: function() {
+			// 加载动画开始
+		},
+		after: function() {
+			// 加载动画结束或销毁
+		},
+		show: true	// 是否显示
+	}
+});
+```
+
+你可以在pre和after的回调函数中做任何想做的事情，比如在HTML中事先写好loading的DOM对象，然后用pre和after来控制显示。
+
+或许你觉得上一小节**AJAX状态操作**中的`before`和`complete`中也能做相同的事情，但谁也无法保证你在之后不会因为特殊需求而把`before`和`complete`给覆盖掉，因此使用专门的loadingFunction来做加载动画的控制将不会让你觉得束手束脚。
+
+**注意事项：**
+
+**1、pre的执行顺序在before之后，loadingContent和loadingBar开始之前；**
+
+**2、after的执行顺序在loadingContent和loadingBar结束之后，timeout和complete之前；**
+
+**3、loadingFunction、loadingContent和loadingBar三者都是不冲突的；**
+
+**4、loadingFunction不提供在DOM属性上进行设置。**
 
 ### API
 
@@ -412,7 +463,11 @@ console.log(bar);		// 4
 
 这两个方法可以让你在body之间共享数据。用setData来保存数据，以bodyname（aa-body的值）作为标识，content可以传入任何形式的数据。在目标页面使用getData(bodyname)来获取数据。
 
-**注意：对同一bodyname使用setData将会进行覆盖。**
+**注意事项：**
+
+**1、在同一页面中对同一bodyname使用setData将会进行覆盖；**
+
+**2、不同页面中的同一bodyname的数据都会被保存，如果你使用`air.ajaxify.back(bodyname)`方法返回页面，你仍然可以正确获取到之前设置的数据。**
 
 #### air.ajaxify.go(elem)
 
@@ -456,13 +511,23 @@ console.log(bar);		// 4
 
 获取当前**浏览器地址栏**中的url参数，有一个可选参数`key`。不传入`key`就返回key/value形式的JSON对象，传入`key`则直接获取对应value。
 
-### air.isEmpty(obj)
+### air.isEmpty(arg)
 
-判断传入的值或对象是否为空，如果参数是空字符串、null或undefined类型，则返回true。否则返回false。
+判断传入的**值或对象**是否为空，如果参数是**空字符串、null、undefined、空对象或空数组**，则返回true。否则返回false。
+
+这个方法与平常我们用“”叹号`!`取反来判定空值”相比有两个优势：
+
+1、它可以判定数组和对象是否为空；
+
+2、叹号会将数字0判定为false，而此方法会正确识别数字0 。
 
 ### air.isMobile()
 
 根据屏幕宽度来判断是不是手机用户，边界值为768像素。
+
+### air.setRem()
+
+这个方法可以根据屏幕宽度来计算`rem`单位的相对值，如果你准备开发移动端响应式页面，可以直接调用此方法，随后在CSS中以rem作为单位，则不论在何种宽度的屏幕上，你的样式都能够进行响应式的变化。
 
 ### air.rmspStr(str)
 
