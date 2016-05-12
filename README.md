@@ -32,13 +32,15 @@ Version: 1.0.93
 
 ## 更新说明 - V1.0.93
 
-1、AJAX状态操作全部采用回调函数的方式（详见[AJAX状态操作](#ajax状态操作)）；
+1、AJAX状态控制全部采用回调函数的方式（详见[AJAX状态控制](#ajax状态控制)）；
 
 2、增加了`loadingFunction`属性（详见[loadingFunction](#loadingfunction)）；
 
 3、更成熟的`setData()`机制，使用`back()`返回时仍能正确获取到此页面之前设置的数据；
 
 4、更新了`固有方法`的说明（详见[air-js固有方法](#air-js固有方法)）。
+
+5、增加了`回调函数的默认参数`的说明（详见[回调函数的默认参数](#回调函数的默认参数)）。
 
 ## 更新说明 - V1.0.92
 
@@ -351,11 +353,11 @@ air.ajaxify({
 });
 ```
 
-#### AJAX状态操作
+#### AJAX状态控制
 
 `options`中的一些属性可以根据AJAX请求的状态来执行操作。
 
-对AJAX的状态操作采用回调函数的形式，比如：
+对AJAX的状态控制采用回调函数的形式，比如：
 
 ```javascript
 // 全局设置所有air-ajaxify请求的通用操作
@@ -421,7 +423,7 @@ air.ajaxify({
 
 你可以在pre和after的回调函数中做任何想做的事情，比如在HTML中事先写好loading的DOM对象，然后用pre和after来控制显示。
 
-或许你觉得上一小节**AJAX状态操作**中的`before`和`complete`中也能做相同的事情，但谁也无法保证你在之后不会因为特殊需求而把`before`和`complete`给覆盖掉，因此使用专门的loadingFunction来做加载动画的控制将不会让你觉得束手束脚。
+或许你觉得上一小节**AJAX状态控制**中的`before`和`complete`中也能做相同的事情，但谁也无法保证你在之后不会因为特殊需求而把`before`和`complete`给覆盖掉，因此使用专门的loadingFunction来做加载动画的控制将不会让你觉得束手束脚。
 
 **注意事项：**
 
@@ -432,6 +434,31 @@ air.ajaxify({
 **3、loadingFunction、loadingContent和loadingBar三者都是不冲突的；**
 
 **4、loadingFunction不提供在DOM属性上进行设置。**
+
+#### 回调函数的默认参数
+
+无论AJAX状态控制的回调函数，还是loadingFunction的回调函数，都会携带一些可选的参数。
+
+所有的回调函数中的第一个参数默认都是options对象，里面包含了与本次请求对应的全部设置，例如：
+
+```javascript
+air.ajaxify({
+	prepare: function(op){
+		console.log(op);
+		if(op.url == "demo.html")
+			return false;		// 加载之前判断此次请求的url是不是demo.html，如果是则返回false，不发起请求。
+	},
+	after: function(op, XHR, status){
+		// do something
+	}
+});
+```
+
+`prepare`, `before` 以及 `loadingFunction.pre` 中默认只携带options；
+
+`success`, `render` ,`afterRender`, `error` 中第一个参数是options，第二个参数是data（即成功或出错返回的数据）；
+
+`timeout`, `complete` 以及 `loadingFunction.after` 中第一个参数是options，第二个参数是XHR对象，第三个参数是status（即返回状态）。
 
 ### API
 
@@ -515,7 +542,7 @@ console.log(bar);		// 4
 
 判断传入的**值或对象**是否为空，如果参数是**空字符串、null、undefined、空对象或空数组**，则返回true。否则返回false。
 
-这个方法与平常我们用“”叹号`!`取反来判定空值”相比有两个优势：
+这个方法与平常我们用“叹号`!`取反来判定空值”相比有两个优势：
 
 1、它可以判定数组和对象是否为空；
 
