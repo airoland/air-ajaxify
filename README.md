@@ -1,6 +1,6 @@
 # air-ajaxify
 
-A.I.R AJAX request for html, with loadingbar and custom options.
+A.I.R light-weight SPA framework, based on AJAX, with loadingbar and custom options.
 
 Author: A.I.Roland
 
@@ -10,7 +10,7 @@ License: MIT
 
 使用者须保留文件中的作者版权信息
 
-Version: 1.0.93
+Version: 1.0.94
 
 **Notice: jQuery is neccessary.**
 
@@ -18,17 +18,23 @@ Version: 1.0.93
 
 ## 简介
 
-`air-ajaxify`是一个基于AJAX来请求网页内容的通用工具，它简化了请求页面的方式，并且自带loadingbar（CSS3加载动画）。
+`air-ajaxify`是一个轻量级类SPA框架，它基于AJAX来获取组件页面，并且自带loadingbar（CSS3），也可自己设置过渡动画。
 
-`air-ajaxify`可以让你用最简单的方式体验到模块化组件开发的乐趣，它轻量而小巧，在良好使用的情况下可以达到类似SPA（单页应用）的效果，你甚至可以把它理解为**只实现了router的小型前端框架**，同时相比于其他框架几乎不需要任何学习成本。
+`air-ajaxify`可以让你用最简单的方式体验到模块化组件开发的乐趣，它非常小巧，在良好使用的情况下完全可以达到SPA（单页应用）的效果，你甚至可以把它理解为**只实现了router的小型前端框架**，同时相比于其他框架几乎不需要任何学习成本。
 
-另外，如果你正为了做SPA而准备学习某种框架，那么`air-ajaxify`将为你提供一个好的开始。
+通常情况下你只需要搭建一个主体页面并引入`air-ajaxify`，其余的页面都可以做成组件形式来异步加载，组件中写的JS代码都会在加载时执行，这样可以大大减少开发上的重复性劳动。
+
+另外，如果你正为了做SPA而准备学习其他框架，那么`air-ajaxify`将为你提供一个好的开始。
 
 **注意：本工具依赖于jQuery，以后会考虑推出原生JS的版本。**
 
 ## 开源说明
 
-目前正在V1.0.x迭代中，最新的V1.0.93版本功能已经完备，但代码还有可以优化和精简的地方，因此暂不开源，只提供压缩版本（在dist目录下）。待版本更新到V1.1.0优化完毕以后会全面开源。
+目前正在V1.0.x迭代中，最新的V1.0.94版本功能已经完备，但代码还有可以优化和精简的地方，因此暂不开源，只提供压缩版本（在dist目录下）。待版本更新到V1.1.0优化完毕以后会全面开源。
+
+## 更新说明 - V1.0.94
+
+更新了`back()`方法，提供两种回退模式（详见[air.ajaxify.back()](#airajaxifybackbodyname--isnewrequest)）。
 
 ## 更新说明 - V1.0.93
 
@@ -58,7 +64,7 @@ Version: 1.0.93
 
 一个最简单的使用air-ajaxify的方式如下：
 
-在HTML中：
+在主体页面中：
 
 ```html
 <a href="javascript:;" aa-url="test.html" aa-target="test">test</a>
@@ -67,7 +73,7 @@ Version: 1.0.93
 
 随后在页面底部引入`air-ajaxify.min.js`即可
 
-`air-ajaxify`会在页面加载时进行初始化，当我们点击`a`标签后，会把`test.html`的内容加载到下方的`div`盒子中，并且加载过程中会在页面顶部显示一条从左至右的loadingbar（采用CSS3动画）。
+`air-ajaxify`会在页面加载时进行初始化，当我们点击`a`标签后，会把组件页面`test.html`的内容加载到下方的`div`盒子中，并且执行`test.html`中的JS代码，同时加载过程中会在页面顶部显示一条从左至右的loadingbar（采用CSS3动画）。
 
 ### DOM属性介绍
 
@@ -502,9 +508,15 @@ console.log(bar);		// 4
 
 **等同于V1.0.92版本之前的`air.ajaxify.send(elem)`。**
 
-#### air.ajaxify.back(bodyname)
+#### air.ajaxify.back(bodyname [, isNewRequest])
 
-在指定aa-body中执行回退操作，返回之前的历史记录，可多次返回直到初始的页面。
+在指定aa-body中执行回退操作，返回之前的历史记录，可多次返回直到初始的页面，**所返回页面中的JS代码将会重新执行**。
+
+为了增强灵活性，我在V1.0.94版本增加了一个可选参数`isNewRequest`，如果传入`true`，则代表你希望以重新发送请求的方式来获取上一张页面。传入其他值或不传值将会按默认的缓存方式来回退。
+
+通常情况下我们不需要设置这个参数，默认的缓存模式已经可以满足大部分需求，不仅回退速度快，而且JS代码也会执行，如果你用AJAX请求来获取数据，那么回退后的页面数据也会进行更新。
+
+但如果你是在服务端来渲染页面数据的（比如使用nodejs），并且希望回退时也更新数据，那么设置此参数是一个比较好的选择。
 
 #### air.ajaxify.refresh(bodyname)
 
