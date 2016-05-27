@@ -10,7 +10,7 @@ License: MIT
 
 使用者须保留文件中的作者版权信息
 
-Version: 1.0.94
+Version: 1.0.95
 
 **Notice: jQuery is neccessary.**
 
@@ -20,17 +20,47 @@ Version: 1.0.94
 
 `air-ajaxify`是一个轻量级类SPA框架，它基于AJAX来获取组件页面，并且自带loadingbar（CSS3），也可自己设置过渡动画。
 
-`air-ajaxify`可以让你用最简单的方式体验到模块化组件开发的乐趣，它非常小巧，在良好使用的情况下完全可以达到SPA（单页应用）的效果，你甚至可以把它理解为**只实现了router的小型前端框架**，同时相比于其他框架几乎不需要任何学习成本。
+`air-ajaxify`可以让你用最简单的方式体验到模块化组件开发的乐趣，它非常小巧，在良好使用的情况下完全可以达到SPA（单页应用）的效果，你甚至可以把它理解为**专注于实现router模块的小型前端框架**，同时相比于其他框架几乎不需要任何学习成本。
 
 通常情况下你只需要搭建一个主体页面并引入`air-ajaxify`，其余的页面都可以做成组件形式来异步加载，组件中写的JS代码都会在加载时执行，这样可以大大减少开发上的重复性劳动。
 
 另外，如果你正为了做SPA而准备学习其他框架，那么`air-ajaxify`将为你提供一个好的开始。
 
-**注意：本工具依赖于jQuery，以后会考虑推出原生JS的版本。**
+**注意：本工具依赖于jQuery，以后会推出基于原生JS，不依赖于任何框架和库，并且纯粹实现路由的air-router框架。**
+
+## 适用场景
+
+尽管现在已经有非常多的前端工程化框架，并且都提供了router组件，但`air-ajaxify`仍然能有它的一席之地。
+
+原因在于大部分前端框架的学习曲线都比较陡峭，而其router组件通常依赖于框架本身，前端初学者在短时间内完全上手还有一定的难度。
+
+这时对于初学者来说，`air-ajaxify`可以提供一个平滑的过渡，因此我将`air-ajaxify`定义为连接前端初学者和前端高级框架之间的桥梁。
+
+总结起来，`air-ajaxify`的适用场景如下：
+
+1、准备做SPA项目，但还没有SPA框架基础，需要一个平滑过渡；
+
+2、希望只存在一个主题页面，其他页面转化为组件页面，避免重复劳动；
+
+3、项目基于jQuery或不在乎jQuery文件体积；
 
 ## 开源说明
 
-目前正在V1.0.x迭代中，最新的V1.0.94版本功能已经完备，但代码还有可以优化和精简的地方，因此暂不开源，只提供压缩版本（在dist目录下）。待版本更新到V1.1.0优化完毕以后会全面开源。
+目前正在V1.0.x迭代中，最新的V1.0.95版本功能已经完备，但代码还有可以优化和精简的地方，因此暂不开源，只提供压缩版本（在dist目录下）。待版本更新到V1.1.0优化完毕以后会全面开源。
+
+## 更新说明 - V1.0.95
+
+1、增加了绑定浏览器返回和刷新操作的功能（详见[air.ajaxify.on()](#airajaxifyonoptions)）；
+
+2、增加了可阻塞用户返回并根据自定义操作来决定下一步的功能（详见[air.ajaxify.block()](#airajaxifyblocktype-action和airajaxifycontinuetype)）；
+
+3、增加了改变页面title的功能，你可以在DOM和JS中设置它（详见[aa-title](#aa-title)）；
+
+4、增加了replace模式，你可以在DOM和JS中设置它（详见[aa-replace](#aa-replace)）；
+
+5、options大部分属性的默认值从null修改为undefined；
+
+6、prepare操作将支持修改options对象并返回（详见[用prepare来修改options](#用prepare来修改options)）。
 
 ## 更新说明 - V1.0.94
 
@@ -107,6 +137,22 @@ air.ajaxify({url:"test.html"});
 
 点击`test1`会将test1.html的内容同时加载到**两个**`page1`盒子中，点击`test2`同理，只是加载的页面为test2.html。而点击`test3`则会将test3.html加载到`page2`中。
 
+#### aa-title
+
+`aa-title`属性可用来设置在加载对应的`aa-url`时改变页面的title
+
+```html
+<div aa-url="test1.html" aa-target="page1" aa-title="测试">test1</div>
+
+<div aa-body="page1"></div>
+```
+
+#### aa-replace
+
+这个属性用来标记这次加载为replace模式，这有点像location.assign和location.replace的区别，它会替换当前`air-ajaxify`的历史记录，而不是新增一条。
+
+这样在返回历史记录时，被replace的组件将被跳过。
+
 #### loadingbar相关属性
 
 `air-ajaxify`提供丰富的DOM属性来自定义loadingbar：
@@ -142,38 +188,40 @@ air.ajaxify({url:"test.html"});
 
 ```javascript
 options = {
-	elem: null,
-	url: null,					// 对应aa-url
-	target: null,				// 对应aa-target
+	elem: undefined,
+	url: undefined,					// 对应aa-url
+	target: undefined,				// 对应aa-target
+	title: undefined,				// 对应aa-title
+	replace: false,					// 对应aa-replace
 	loadingBar: {
-		color: null,			// 对应aa-laodingbar-color
-		height: null,			// 对应aa-loadingbar-height
-		width: null,			// 对应aa-loadingbar-width
-		opacity: null,			// 对应aa-loadingbar-opacity
+		color: undefined,			// 对应aa-laodingbar-color
+		height: undefined,			// 对应aa-loadingbar-height
+		width: undefined,			// 对应aa-loadingbar-width
+		opacity: undefined,			// 对应aa-loadingbar-opacity
 		direction: 'right',		// 对应aa-loadingbar-direction
 		shadow: true,			// 对应aa-loadingbar-shadow
-		cssClass: null,			// 对应aa-loadingbar-class
+		cssClass: undefined,			// 对应aa-loadingbar-class
 		show: true				// 对应aa-loadingbar-show
 	},
 	loadingContent: {
-		html: null,				// 对应aa-loadingcontent-html
-		cssClass: null,			// 对应aa-loadingcontent-class
+		html: undefined,				// 对应aa-loadingcontent-html
+		cssClass: undefined,			// 对应aa-loadingcontent-class
 		show: true				// 对应aa-loadingcontent-show
 	},
 	loadingFunction: {
-		pre: null,
-		after: null,
+		pre: undefined,
+		after: undefined,
 		show: true
 	},
-	prepare:null,
-	before:null,
-	sucess:null,
-	render:null,
-	afterRender:null,
-	error:null,
+	prepare:undefined,
+	before:undefined,
+	sucess:undefined,
+	render:undefined,
+	afterRender:undefined,
+	error:undefined,
 	time:15000,
-	timeout:null,
-	complete:null
+	timeout:undefined,
+	complete:undefined
 }
 ```
 
@@ -466,6 +514,26 @@ air.ajaxify({
 
 `timeout`, `complete` 以及 `loadingFunction.after` 中第一个参数是options，第二个参数是XHR对象，第三个参数是status（即返回状态）。
 
+
+##### 用prepare来修改options
+
+在V1.0.95中prepare的操作将可以在准备发送请求前，根据自己的需求来更改本次请求的options。
+
+如果你对options做了更改，那么必须将修改后的对象作为返回值来使其生效。
+
+示例：
+
+```javascript
+air.ajaxify({
+	prepare: function(op){
+		if(!user){
+			op.url = 'login.html';		// 如果用户未登录则跳转到登陆页面
+			return op;
+		}
+	}
+});
+```
+
 ### API
 
 #### air.ajaxify.param(bodyname [, key])
@@ -541,6 +609,115 @@ console.log(bar);		// 4
 **1、即使`send`方法没有约束，你也应该至少配置一个与`target`属性对应的`aa-body`盒子来接收页面，否则将什么都看不到；**
 
 **2、`send`方法设置的属性将只会影响由它发送的请求，而不会对任何其他形式设置的属性进行覆盖。**
+
+#### air.ajaxify.on(options)
+
+通常情况下，作为单页应用，如果不对浏览器的返回和刷新做处理，那么我们触发浏览器返回事件时将会直接离开当前页面，触发刷新时则会回到页面的初始状态，这不是我们希望看到的。
+
+因此我提供了这个方法来供用户绑定浏览器的返回或刷新操作，使得触发浏览器返回时只触发`air-ajaxify`的返回**而不是离开网页本身**，触发刷新时**仍显示当前组件**而不是回到首页。经过测试可以兼容大部分主流PC和移动端浏览器，包括苹果和安卓的微信浏览器。
+
+在使用时需要传入一个对象，对象中的默认属性如下：
+
+```javascript
+options = {
+	type: undefined,		// 设置你需要绑定的操作，支持'back'和'refresh'两种模式，每次绑定只能选择其中一个
+	body: undefined,		// 设置被影响的aa-body，可以传递一个，或以数组的形式传递多个，比如：['body1','body2']，则触发浏览器回退时它们都会回退
+	browser: true,			// 是否绑定浏览器操作，下方将会有详细说明
+	global: true,			// 是否绑定到全局对应body的back()或refresh()方法，下方将会有详细说明
+	action: undefined,		// 触发对应操作时执行的函数，必须是同步操作，下方将会有详细说明
+	propagate: false,		// 是否将action向下传播，下方将会有详细说明
+	newRequest: false,		// 当触发back时是否重新发送请求，如果是false则采用缓存方式，与air.ajaxify.back()中的第二个参数isNewRequest的效果类似
+	waitOthers: true		// 如果绑定了多个body，当其中一个body回退到初始状态后，是否等待其他未回到初始状态的body继续返回，下方将会有详细说明
+}
+```
+
+为了保持`air-ajaxify`一贯的灵活性，我提供了很多属性，不必担心，一般在没有特殊需求的情况下你只需要设置2~3个属性即可。
+
+下面是对某些属性的详细说明：
+
+##### browser
+
+当值为true时，将会绑定浏览器操作。比如type为`back`，则在浏览器返回时会触发`air-ajaxify`在相应body上的回退操作，如果存在`action`则优先触发`action`操作。
+
+当值为false时，则不监听浏览器的操作。
+
+##### global
+
+当值为true时，如果存在`action`，则用户使用直接调用对应body的`air.ajaxify.back()`时会优先触发`action`操作。
+
+当值为false时，则`action`不会对`air.ajaxify.back()`产生影响。
+
+**注：browser与global是不冲突的，browser对应浏览器，global对应back()方法。你可以随意设置它们。另外，即使它们都为true，在一次回退操作中（不论是浏览器的还是back()方法的），都只会触发一次action，你不必担心action的重复操作。**
+
+##### action
+
+action可以传入一个函数，它将会在回退发生前执行，如果`return false`则不进行回退。如果返回其他值或不返回值则继续回退操作。
+
+action的操作必须是同步的，如果你想等待一个异步操作的返回值（比如弹出自定义对话框让用户来选择是否回退，或者一个AJAX操作），那么action将无法阻塞回退。
+
+你可以使用[air.ajaxify.block()](#airajaxifyblocktype-action)来解决这个问题，它会阻塞回退操作，并支持异步方法。
+
+##### propagate
+
+如果值为false，并且存在`action`，则`action`只会在当前组件起作用，不会向下传播，即当你前进到下一个组件时，`action`就会失效。但若返回到当前组件，`action`仍然生效。
+
+如果值为true，并且存在`action`，则`action`会向下传播。例如你绑定了回退事件，则从此组件前进到之后的任何组件中，`action`都会在回退时触发。除非你进行了覆盖或取消（下面会有详细说明）。
+
+##### waitOthers
+
+如果你设置了多个body，并且它们的历史进度不同，那么这个属性会在回退时起到作用。
+
+假设现在设置了['body1','body2']，其中`body1`的历史进度为2（即前进了2个组件），`body2`的历时进度为4，触发浏览器回退时它们两个都会进行回退。
+
+那么当`body1`返回到初始状态，即历史进度为0时，`body2`仍然还有2个历史记录。
+
+此时若`waitOthers`为false，则触发浏览器返回时，将会离开当前页面。
+
+若为true，则会继续对`body2`进行一次回退，直到触发多次返回使它们都回退到初始状态，再离开当前页面。
+
+##### on()方法的简单示例
+
+```javascript
+// 绑定浏览器返回
+air.ajaxify.on({
+	type: 'back',
+	body: 'testbody',
+	action: function(){
+		if(condition){
+			// do something
+			return true;
+		}
+		else {
+			// do something
+			return false;
+		}
+	}
+});
+// 绑定浏览器刷新
+air.ajaxify.on({
+	type: 'refresh',
+	body: 'testbody'
+});
+```
+
+#### air.ajaxify.block(type, action)和air.ajaxify.continue(type)
+
+此方法会阻塞回退，可用于异步方法，目前只支持`back`模式。
+
+由于此方法支持异步操作，因此在action中不能以返回值来判定下一步操作，而是使用另一个API：`air.ajaxify.continue(type)`来继续。
+
+使用示例：
+
+```javascript
+air.ajaxify.block('back', function(){
+	// 可进行异步操作
+	air.ajaxify.continue('back');	// 确认返回则调用此API
+});
+```
+
+#### air.ajaxify.off(type)
+
+这个方法用来取消用`on()`或者`block()`绑定的事件，传入的type支持`back`,`refresh`,`block`三种。
 
 ## air-js固有方法
 
