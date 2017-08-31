@@ -5,8 +5,9 @@
  * @description：A.I.R light-weight SPA framework, based on AJAX, with loadingbar and custom options.
  * @作者：张英磊
  * @site: https://github.com/airoland/air-ajaxify
- * @org_site: https://github.com/air-js
- * @personal_site: https://github.com/airoland
+ * @org: https://github.com/air-js
+ * @github: https://github.com/airoland
+ * @blog: https://airoland.github.io/
  * @license: MIT
  * Please do not delete the copyright information
  * 请勿删除版权信息
